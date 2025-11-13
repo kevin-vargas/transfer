@@ -223,6 +223,40 @@
               "path": ["users", "{{user2Id}}"]
             }
           }
+        },
+        {
+          "name": "Get User 1 Risk Assessment",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{user1Id}}/risk",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{user1Id}}", "risk"]
+            }
+          }
+        },
+        {
+          "name": "Get User 2 Risk Assessment",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{user2Id}}/risk",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{user2Id}}", "risk"]
+            }
+          }
         }
       ]
     },

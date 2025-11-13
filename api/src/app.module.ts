@@ -9,15 +9,17 @@ import { Transaction } from './entities/transaction.entity';
 import { BalanceAudit } from './entities/balance-audit.entity';
 import { UserService } from './services/user.service';
 import { TransactionService } from './services/transaction.service';
+import { RiskService } from './services/risk.service';
 import { TransactionController } from './controllers/transaction.controller';
 import { UserController } from './controllers/user.controller';
+import { RiskController } from './controllers/risk.controller';
 
 @Module({
   imports: [
     DatabaseModule,
     TypeOrmModule.forFeature([User, Transaction, BalanceAudit]),
   ],
-  controllers: [AppController, TransactionController, UserController],
-  providers: [AppService, RedisService, UserService, TransactionService],
+  controllers: [AppController, TransactionController, UserController, RiskController],
+  providers: [AppService, RedisService, UserService, TransactionService, RiskService],
 })
 export class AppModule {}

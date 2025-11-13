@@ -1,0 +1,37 @@
+networks:
+  web:
+    driver: bridge
+
+services:
+  nginx:
+    image: nginx:mainline
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./dale/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    environment:
+      - DOMAIN={{.Domain}}
+    depends_on:
+{{range .AllServices}}      - {{.Name}}
+{{end}}    networks:
+      - web
+    restart: unless-stopped
+
+{{range .AllServices}}  {{.Name}}:
+    build:
+      context: ./{{.Name}}
+      dockerfile: Dockerfile
+{{if .Environment}}    environment:
+{{range $key, $value := .Environment}}      - {{$key}}={{$value}}
+{{end}}{{end}}{{if .Ports}}    ports:
+{{range .Ports}}      - "{{.}}"
+{{end}}{{end}}{{if .Volumes}}    volumes:
+{{range .Volumes}}      - "{{.}}"
+{{end}}{{end}}    expose:
+      - "{{.Port}}"
+    networks:
+      - web
+    restart: unless-stopped
+
+{{end}}

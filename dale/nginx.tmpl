@@ -1,0 +1,82 @@
+{{range .Protected}}
+# ---------- {{.Name | ToUpper}} (protected) ----------
+server {
+    listen 80;
+    server_name {{.Name}}.{{$.Domain}};
+
+{{if .TrustedProxies}}    # Real IP configuration for trusted proxies
+{{range .TrustedProxies}}    set_real_ip_from {{.}};
+{{end}}    real_ip_header CF-Connecting-IP;
+    real_ip_recursive on;
+
+{{end}}    # internal subrequest to auth service
+    location = /auth-check {
+        internal;
+        proxy_pass http://auth:8080/check;
+        proxy_pass_request_body off;
+        proxy_set_header Content-Length "";
+    }
+
+    # redirect to login if unauthorized
+    error_page 401 = @login;
+    location @login {
+        return 302 http://auth.{{$.Domain}}/auth/login?redirect=http://$host$request_uri;
+    }
+
+    # proxy to {{.Name}} (HTTP + WebSocket support)
+    location / {
+{{if .Allowlist}}{{range .Allowlist}}        allow {{.}};
+{{end}}        deny all;
+
+{{end}}        auth_request /auth-check;
+        auth_request_set $user $upstream_http_x_user;
+
+        proxy_http_version 1.1;
+        proxy_set_header X-User $user;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+
+        proxy_pass http://{{.Name}}:{{.Port}};
+        proxy_read_timeout 86400; # optional
+    }
+}
+
+{{end}}
+{{range .Unprotected}}
+# ---------- {{.Name | ToUpper}} (unprotected) ----------
+server {
+    listen 80;
+    server_name {{.Name}}.{{$.Domain}};
+
+{{if .TrustedProxies}}    # Real IP configuration for trusted proxies
+{{range .TrustedProxies}}    set_real_ip_from {{.}};
+{{end}}    real_ip_header CF-Connecting-IP;
+    real_ip_recursive on;
+
+{{end}}    location / {
+{{if .Allowlist}}{{range .Allowlist}}        allow {{.}};
+{{end}}        deny all;
+
+{{end}}        proxy_pass http://{{.Name}}:{{.Port}};
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+    }
+}
+
+{{end}}
+# Health check endpoint
+server {
+    listen 80;
+    server_name {{.Domain}};
+    
+    location /nginx-health {
+        access_log off;
+        return 200 "healthy\n";
+        add_header Content-Type text/plain;
+    }
+    
+    location / {
+        return 301 http://{{.FirstProject}}.{{.Domain}}$request_uri;
+    }
+}

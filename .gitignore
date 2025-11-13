@@ -1,0 +1,6 @@
+.env
+.DS_STORE
+
+# Generated files
+docker-compose.yml
+dale/nginx/default.conf

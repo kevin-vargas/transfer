@@ -1,0 +1,52 @@
+projects:
+  auth:
+    port: 8080
+    protected: false
+    environment:
+      DOMAIN: "${DALE_DOMAIN:-localhost}"
+      USERNAME: "${AUTH_USERNAME:-foo}"
+      PASSWORD: "${AUTH_PASSWORD:-bar}"
+      SECRET: "${AUTH_SECRET:-change-me-in-production}"
+      TOKEN_TTL_HOURS: "${AUTH_TOKEN_TTL_HOURS:-24}"
+
+  gem:
+    port: 8080
+    protected: true
+    volumes:
+      - "${HOME}/.gemini:/home/app/.gemini"
+
+  api:
+    port: 3000
+    protected: true
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: api_db
+
+# Add more projects like:
+# api:
+#   port: 3000
+#   protected: true
+#   environment:
+#     API_KEY: "${API_KEY:-default}"
+#     LOG_LEVEL: "${LOG_LEVEL:-info}"
+#   allowlist:
+#     - "192.168.1.0/24"
+#     - "10.0.0.100"
+#   trusted_proxies:
+#     - "0.0.0.0/0"      # Trust all (development only)
+#     - "::/0"           # Trust all IPv6 (development only)
+#
+# frontend:
+#   port: 5173
+#   protected: false
+#   environment:
+#     API_BASE_URL: "${FRONTEND_API_URL:-http://localhost:3000}"
+#   trusted_proxies:
+#     - "10.0.0.0/8"        # Private networks
+#     - "172.16.0.0/12"     # Private networks  
+#     - "192.168.0.0/16"    # Private networks
+#     - "103.21.244.0/22"   # Cloudflare ranges
+#     - "173.245.48.0/20"   # Cloudflare ranges

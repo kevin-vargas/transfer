@@ -1,0 +1,24 @@
+redis:
+  image: redis:7-alpine
+  ports:
+    - "6379:6379"
+  volumes:
+    - redis_data:/data
+  networks:
+    - web
+  restart: unless-stopped
+  command: redis-server --appendonly yes
+
+postgres:
+  image: postgres:15-alpine
+  ports:
+    - "5432:5432"
+  environment:
+    POSTGRES_DB: api_db
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
+  volumes:
+    - postgres_data:/var/lib/postgresql/data
+  networks:
+    - web
+  restart: unless-stopped

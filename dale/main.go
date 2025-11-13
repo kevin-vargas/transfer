@@ -58,23 +58,23 @@ func main() {
 	// Load .env file (ignore error if file doesn't exist)
 	godotenv.Load("../.env")
 
-	domain := getEnv("DALE_DOMAIN", "localhost")
-	
+	domain := getEnv("DALE_DOMAIN", "lvh.me")
+
 	// Read config
 	config := readConfig(os.Args[1])
-	
+
 	// Prepare template data
 	data := prepareTemplateData(config, domain)
-	
+
 	// Generate files using embedded templates
 	if err := generate("docker-compose", dockerComposeTemplate, "../docker-compose.yml", data); err != nil {
 		log.Fatal("Error generating docker-compose.yml:", err)
 	}
-	
+
 	if err := generate("nginx", nginxTemplate, "nginx/default.conf", data); err != nil {
 		log.Fatal("Error generating nginx config:", err)
 	}
-	
+
 	fmt.Printf("✅ Generated configuration for %d projects\n", len(config.Projects))
 }
 
@@ -90,7 +90,7 @@ func readConfig(file string) Config {
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	var config Config
 	if err := yaml.Unmarshal(data, &config); err != nil {
 		log.Fatal(err)
@@ -101,7 +101,7 @@ func readConfig(file string) Config {
 func prepareTemplateData(config Config, domain string) TemplateData {
 	var protected, unprotected, allServices []ServiceData
 	var firstProject string
-	
+
 	for name, project := range config.Projects {
 		service := ServiceData{
 			Name:           name,
@@ -112,20 +112,20 @@ func prepareTemplateData(config Config, domain string) TemplateData {
 			Ports:          project.Ports,
 			Volumes:        project.Volumes,
 		}
-		
+
 		allServices = append(allServices, service)
-		
+
 		if project.Protected {
 			protected = append(protected, service)
 		} else {
 			unprotected = append(unprotected, service)
 		}
-		
+
 		if firstProject == "" {
 			firstProject = name
 		}
 	}
-	
+
 	return TemplateData{
 		Domain:       domain,
 		Protected:    protected,
@@ -137,23 +137,23 @@ func prepareTemplateData(config Config, domain string) TemplateData {
 
 func generate(name, templateContent, outputFile string, data TemplateData) error {
 	os.MkdirAll("nginx", 0755)
-	
+
 	file, err := os.Create(outputFile)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
-	
+
 	tmpl := template.Must(template.New(name).Funcs(template.FuncMap{"ToUpper": strings.ToUpper}).Parse(templateContent))
 	if err := tmpl.Execute(file, data); err != nil {
 		return err
 	}
-	
+
 	// If generating docker-compose, append infrastructure files
 	if name == "docker-compose" {
 		return appendInfrastructure(file)
 	}
-	
+
 	return nil
 }
 
@@ -167,7 +167,7 @@ func appendInfrastructure(file *os.File) error {
 			}
 		}
 	}
-	
+
 	// Volumes
 	if data, err := os.ReadFile("infra/volumes.yaml"); err == nil {
 		file.WriteString("\nvolumes:\n")
@@ -177,6 +177,6 @@ func appendInfrastructure(file *os.File) error {
 			}
 		}
 	}
-	
+
 	return nil
 }

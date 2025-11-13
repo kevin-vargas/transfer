@@ -3,7 +3,7 @@ projects:
     port: 8080
     protected: false
     environment:
-      DOMAIN: "${DALE_DOMAIN:-localhost}"
+      DOMAIN: "${DALE_DOMAIN:-lvh.me}"
       USERNAME: "${AUTH_USERNAME:-foo}"
       PASSWORD: "${AUTH_PASSWORD:-bar}"
       SECRET: "${AUTH_SECRET:-change-me-in-production}"

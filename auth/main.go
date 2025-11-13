@@ -36,9 +36,9 @@ func loadConfig() *Config {
 		hours = 24
 	}
 
-	domain := getEnvOrDefault("DOMAIN", "localhost")
+	domain := getEnvOrDefault("DOMAIN", "lvh.me")
 	cookieDomain := "." + domain // Add dot prefix for subdomain sharing
-	
+
 	return &Config{
 		Username:     getEnvOrDefault("USERNAME", "admin"),
 		Password:     getEnvOrDefault("PASSWORD", "password"),
@@ -282,7 +282,7 @@ func (c *Config) handleCheck(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	
+
 	// Try Authorization header (agent flow)
 	if auth := r.Header.Get("Authorization"); strings.HasPrefix(auth, "Bearer ") {
 		token := strings.TrimPrefix(auth, "Bearer ")
@@ -292,7 +292,7 @@ func (c *Config) handleCheck(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	
+
 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
 }
 
@@ -362,30 +362,30 @@ func (c *Config) handleOAuth2Token(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	
+
 	r.ParseForm()
 	clientID := r.FormValue("client_id")
 	clientSecret := r.FormValue("client_secret")
 	grantType := r.FormValue("grant_type")
-	
+
 	if grantType != "client_credentials" {
 		http.Error(w, "unsupported_grant_type", http.StatusBadRequest)
 		return
 	}
-	
+
 	if clientID != c.Username || clientSecret != c.Password {
 		http.Error(w, "invalid_client", http.StatusUnauthorized)
 		return
 	}
-	
+
 	token := c.generateToken("agent")
-	
+
 	response := map[string]interface{}{
 		"access_token": token,
 		"token_type":   "Bearer",
 		"expires_in":   int(c.TokenTTL.Seconds()),
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
